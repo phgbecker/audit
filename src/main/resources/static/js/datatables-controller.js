@@ -4,6 +4,7 @@ $(document).ready(function() {
     "dom": "<'row'<'col-sm-1 col-md-1'f><'col-sm-1 offset-8 col-md-1'l>>" +
     "<'row'<'col-sm-12'tr>>" +
     "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+    "order": [],
     "language": {
         "sEmptyTable": "Nenhum registro encontrado",
         "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ registros",
