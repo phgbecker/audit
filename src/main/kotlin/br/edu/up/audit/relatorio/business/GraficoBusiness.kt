@@ -41,28 +41,58 @@ class GraficoBusiness(private val repositorio: JdbcTemplate) {
 
     fun guiasPorEspecialidade(cnpj: String, dataInicial: Date? = null, dataFinal: Date? = null): List<RegistroGrafico> =
             repositorio.query("""
+                WITH
+                    indicativos AS (
+                        SELECT 'SIM' AS indicativo
+                        UNION
+                        SELECT 'NAO' AS indicativo
+                        UNION
+                        SELECT 'INCONCLUSIVO' AS indicativo
+                    ),
+                    especialidades AS (
+                        SELECT DISTINCT
+                            especialidade AS indice
+                        FROM procedimento
+                    ),
+                    base_final AS (
+                        SELECT *
+                        FROM
+                        especialidades
+                        CROSS JOIN indicativos
+                    ),
+                    guias AS (
+                        SELECT
+                            p.especialidade            AS indice,
+                            g.indicativo_fraude        AS indicativo,
+                            COUNT(g.indicativo_fraude) AS total
+                        FROM
+                            guia AS g
+                        JOIN empresa AS e ON (
+                            e.id_empresa = g.id_empresa
+                        )
+                        JOIN procedimento AS p ON (
+                            p.id_guia = g.id_guia
+                        )
+                        WHERE
+                            (e.cnpj = ?)
+                        AND (? IS NULL OR g.data_emissao >= ?)
+                        AND (? IS NULL OR g.data_emissao <= ?)
+                        AND (g.status_processamento = 'PROCESSADO')
+                        GROUP BY
+                            indice,
+                            indicativo
+                        ORDER BY
+                            indice
+                    )
                 SELECT
-                    p.especialidade            AS indice,
-                    g.indicativo_fraude        AS indicativo,
-                    COUNT(g.indicativo_fraude) AS total
-                FROM
-                    guia AS g
-                JOIN empresa AS e ON (
-                    e.id_empresa = g.id_empresa
+                    bf.indice,
+                    bf.indicativo,
+                    COALESCE(g.total, 0) AS total
+                FROM base_final bf
+                LEFT JOIN guias g ON (
+                    g.indice = bf.indice
+                    AND g.indicativo = bf.indicativo
                 )
-                JOIN procedimento AS p ON (
-                    p.id_guia = g.id_guia
-                )
-                WHERE
-                    e.cnpj = ?
-                AND (? IS NULL OR g.data_emissao >= ?)
-                AND (? IS NULL OR g.data_emissao <= ?)
-                AND (g.status_processamento = 'PROCESSADO')	
-                GROUP BY
-                    indice,
-                    indicativo
-                ORDER BY
-                    indice
                 """.trimIndent(),
                     arrayOf(cnpj, dataInicial, dataInicial, dataFinal, dataFinal),
                     RegistroGraficoRowMapper()
@@ -70,28 +100,58 @@ class GraficoBusiness(private val repositorio: JdbcTemplate) {
 
     fun guiasPorPrestador(cnpj: String, dataInicial: Date? = null, dataFinal: Date? = null): List<RegistroGrafico> =
             repositorio.query("""
+                WITH
+                    indicativos AS (
+                        SELECT 'SIM' AS indicativo
+                        UNION
+                        SELECT 'NAO' AS indicativo
+                        UNION
+                        SELECT 'INCONCLUSIVO' AS indicativo
+                    ),
+                    especialidades_prestador AS (
+                        SELECT DISTINCT
+                            especialidade_prestador AS indice
+                        FROM procedimento
+                    ),
+                    base_final AS (
+                        SELECT *
+                        FROM
+                        especialidades_prestador
+                        CROSS JOIN indicativos
+                    ),
+                    guias AS (
+                        SELECT
+                            p.especialidade_prestador  AS indice,
+                            g.indicativo_fraude        AS indicativo,
+                            COUNT(g.indicativo_fraude) AS total
+                        FROM
+                            guia AS g
+                        JOIN empresa AS e ON (
+                            e.id_empresa = g.id_empresa
+                        )
+                        JOIN procedimento AS p ON (
+                            p.id_guia = g.id_guia
+                        )
+                        WHERE
+                            (e.cnpj = ?)
+                        AND (? IS NULL OR g.data_emissao >= ?)
+                        AND (? IS NULL OR g.data_emissao <= ?)
+                        AND (g.status_processamento = 'PROCESSADO')
+                        GROUP BY
+                            indice,
+                            indicativo
+                        ORDER BY
+                            indice
+                    )
                 SELECT
-                    p.especialidade_prestador  AS indice,
-                    g.indicativo_fraude        AS indicativo,
-                    COUNT(g.indicativo_fraude) AS total
-                FROM
-                    guia AS g
-                JOIN empresa AS e ON (
-                    e.id_empresa = g.id_empresa
+                    bf.indice,
+                    bf.indicativo,
+                    COALESCE(g.total, 0) AS total
+                FROM base_final bf
+                LEFT JOIN guias g ON (
+                    g.indice = bf.indice
+                    AND g.indicativo = bf.indicativo
                 )
-                JOIN procedimento AS p ON (
-                    p.id_guia = g.id_guia
-                )
-                WHERE
-                    e.cnpj = ?
-                AND (? IS NULL OR g.data_emissao >= ?)
-                AND (? IS NULL OR g.data_emissao <= ?)
-                AND (g.status_processamento = 'PROCESSADO')	
-                GROUP BY
-                    indice,
-                    indicativo
-                ORDER BY
-                    indice
                 """.trimIndent(),
                     arrayOf(cnpj, dataInicial, dataInicial, dataFinal, dataFinal),
                     RegistroGraficoRowMapper()

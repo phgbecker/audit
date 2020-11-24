@@ -17,7 +17,7 @@ class GraficoFacade(private val graficoBusiness: GraficoBusiness) {
                     dataFinal = dataFinal
             ).run {
                 GraficoDTO(
-                        legendas = this.indices(),
+                        legendas = this.indicesDistintos(),
                         dataset = DatasetDTO(
                                 sim = this.totaisComIndicativo(),
                                 nao = this.totaisSemIndicativo(),
@@ -33,7 +33,7 @@ class GraficoFacade(private val graficoBusiness: GraficoBusiness) {
                     dataFinal = dataFinal
             ).run {
                 GraficoDTO(
-                        legendas = this.indices(),
+                        legendas = this.indicesDistintos(),
                         dataset = DatasetDTO(
                                 sim = this.totaisComIndicativo(),
                                 nao = this.totaisSemIndicativo(),
@@ -49,7 +49,7 @@ class GraficoFacade(private val graficoBusiness: GraficoBusiness) {
                     dataFinal = dataFinal
             ).run {
                 GraficoDTO(
-                        legendas = this.indices(),
+                        legendas = this.indicesDistintos(),
                         dataset = DatasetDTO(
                                 sim = this.totaisComIndicativo(),
                                 nao = this.totaisSemIndicativo(),
